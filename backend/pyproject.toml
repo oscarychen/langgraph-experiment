@@ -1,0 +1,45 @@
+[project]
+name = "hr-rag"
+version = "0.1.0"
+description = "HR RAG backend service"
+authors = [
+    { name = "Oscar Chen", email = "oscar.y.chen@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "sqlalchemy[asyncio]>=2.0.40",
+    "asyncpg>=0.30.0",
+    "pgvector>=0.4.0",
+    "pydantic-settings>=2.8.0",
+    "langgraph>=0.4.0",
+    "langchain>=0.3.0",
+    "langchain-google-genai>=2.1.0",
+    "python-dotenv>=1.1.0",
+    "httpx>=0.28.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=1.0.0",
+    "pytest-cov>=6.1.0",
+    "ruff>=0.11.0",
+    "mypy>=1.15.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[build-system]
+requires = ["uv_build>=0.11.12,<0.12.0"]
+build-backend = "uv_build"

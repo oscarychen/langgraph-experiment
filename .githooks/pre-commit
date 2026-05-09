@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -e
+
+export PATH="$HOME/.local/bin:$HOME/.volta/bin:$PATH"
+
+# Check if backend files are staged
+if git diff --cached --name-only | grep -q '^backend/'; then
+    echo "Running backend checks..."
+    cd backend
+    uv run ruff check src/ tests/
+    uv run ruff format --check src/ tests/
+    cd ..
+fi
+
+# Check if frontend files are staged
+if git diff --cached --name-only | grep -q '^frontend/'; then
+    echo "Running frontend checks..."
+    cd frontend
+    npx eslint .
+    npx tsc -b --noEmit
+    cd ..
+fi
+
+echo "Pre-commit checks passed."
