@@ -34,12 +34,17 @@ Full-stack Retrieval-Augmented Generation (RAG) application for HR document Q&A.
 - `make format` - Auto-format code
 - `make stop` - Stop all services
 - `make clean` - Remove containers, volumes, venvs, node_modules
+- `make db-migrate` - Run all pending Alembic migrations
+- `make db-revision msg="description"` - Create a new auto-generated migration
+- `make db-downgrade` - Downgrade one migration
+- `make db-history` - Show migration history
+- `make db-reset` - Drop and re-create database, then run all migrations
 - `make db-shell` - Open psql shell
 - `make db-logs` - Tail database logs
 
 ## Tech Stack
 - Python 3.13+ (uv)
-- FastAPI, Uvicorn, SQLAlchemy 2.0+ (asyncpg), pgvector
+- FastAPI, Uvicorn, SQLAlchemy 2.0+ (asyncpg), Alembic, pgvector
 - LangGraph, LangChain, langchain-google-genai
 - React 19, Vite, TypeScript
 - Zustand (state), Tailwind CSS v4, shadcn/ui
@@ -67,8 +72,9 @@ Full-stack Retrieval-Augmented Generation (RAG) application for HR document Q&A.
 ### Database
 - AlloyDB Omni Docker image for local dev
 - pgvector for vector storage (768-dim for Google embeddings)
-- Init scripts in `db/init/`
-- Connection: `postgresql+asyncpg://`
+- Alembic for migrations (async mode), config in `backend/alembic/`
+- Models in `backend/src/hr_rag/db/models.py` (autogenerate picks these up)
+- Connection: `postgresql+asyncpg://` (read from `DATABASE_URL` env var)
 
 ### Git
 - Conventional commits (feat:, fix:, chore:, docs:, test:, refactor:)

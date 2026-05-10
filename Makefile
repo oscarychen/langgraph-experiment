@@ -111,6 +111,30 @@ format:
 # DATABASE
 # ============================================================
 
+## db-migrate: Run all pending migrations
+db-migrate:
+	cd backend && uv run alembic upgrade head
+
+## db-revision: Create a new migration (usage: make db-revision msg="add users table")
+db-revision:
+	cd backend && uv run alembic revision --autogenerate -m "$(msg)"
+
+## db-downgrade: Downgrade one migration
+db-downgrade:
+	cd backend && uv run alembic downgrade -1
+
+## db-history: Show migration history
+db-history:
+	cd backend && uv run alembic history --verbose
+
+## db-reset: Drop and re-create database, then run migrations
+db-reset:
+	docker compose exec db dropdb -U $${POSTGRES_USER:-hr_rag} --if-exists $${POSTGRES_DB:-hr_rag}
+	docker compose exec db createdb -U $${POSTGRES_USER:-hr_rag} $${POSTGRES_DB:-hr_rag}
+	docker compose exec db psql -U $${POSTGRES_USER:-hr_rag} -d $${POSTGRES_DB:-hr_rag} -c "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+	cd backend && uv run alembic upgrade head
+	@echo "Database reset complete."
+
 ## db-shell: Open psql shell
 db-shell:
 	docker compose exec db psql -U $${POSTGRES_USER:-hr_rag} -d $${POSTGRES_DB:-hr_rag}
