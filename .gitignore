@@ -28,3 +28,5 @@ docker-data/
 
 # MCP (contains credentials)
 .mcp.json
+
+.coverage

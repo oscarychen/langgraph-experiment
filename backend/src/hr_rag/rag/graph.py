@@ -1,32 +1,39 @@
-from typing import TypedDict
+from typing import Annotated, TypedDict
 
+from langchain_core.messages import BaseMessage
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode
+
+from hr_rag.rag.llm import get_llm
+from hr_rag.rag.tools import HR_TOOLS
 
 
-class RAGState(TypedDict):
-    question: str
-    context: list[str]
-    answer: str
+class AgentState(TypedDict):
+    messages: Annotated[list[BaseMessage], add_messages]
 
 
-def retrieve(state: RAGState) -> RAGState:
-    # TODO: Implement retrieval from pgvector
-    return {**state, "context": []}
+def _agent_node(state: AgentState) -> AgentState:
+    llm = get_llm().bind_tools(HR_TOOLS)
+    response = llm.invoke(state["messages"])
+    return {"messages": [response]}
 
 
-def generate(state: RAGState) -> RAGState:
-    # TODO: Implement LLM generation with context
-    return {**state, "answer": "Not implemented"}
+def _should_continue(state: AgentState) -> str:
+    last = state["messages"][-1]
+    if getattr(last, "tool_calls", None):
+        return "tools"
+    return END
 
 
-def build_rag_graph():
-    graph = StateGraph(RAGState)
-    graph.add_node("retrieve", retrieve)
-    graph.add_node("generate", generate)
-    graph.add_edge(START, "retrieve")
-    graph.add_edge("retrieve", "generate")
-    graph.add_edge("generate", END)
+def build_agent_graph():
+    graph = StateGraph(AgentState)
+    graph.add_node("agent", _agent_node)
+    graph.add_node("tools", ToolNode(HR_TOOLS))
+    graph.add_edge(START, "agent")
+    graph.add_conditional_edges("agent", _should_continue, {"tools": "tools", END: END})
+    graph.add_edge("tools", "agent")
     return graph.compile()
 
 
-rag_chain = build_rag_graph()
+agent_graph = build_agent_graph()
