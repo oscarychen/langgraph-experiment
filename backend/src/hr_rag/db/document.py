@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import (
     DateTime,
     ForeignKey,
@@ -19,9 +19,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from hr_rag.db.base import Base
 
 # Must stay in sync with Settings.embedding_dimension in config.py.
-# Vector dim must be a literal at class-definition time, so the constant
+# Halfvec dim must be a literal at class-definition time, so the constant
 # lives here and Settings mirrors it for runtime-facing code.
-EMBEDDING_DIMENSION = 768
+# Using halfvec (float16) so HNSW can index >2000 dims (vector caps at 2000).
+EMBEDDING_DIMENSION = 3072
 
 
 class Document(Base):
@@ -90,7 +91,7 @@ class DocumentChunk(Base):
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
     chunk_text: Mapped[str] = mapped_column(Text, nullable=False)
     embedding: Mapped[list[float]] = mapped_column(
-        Vector(EMBEDDING_DIMENSION), nullable=False
+        HALFVEC(EMBEDDING_DIMENSION), nullable=False
     )
     token_count: Mapped[int | None] = mapped_column(Integer)
     embedding_model: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -113,6 +114,6 @@ class DocumentChunk(Base):
             "embedding",
             postgresql_using="hnsw",
             postgresql_with={"m": 16, "ef_construction": 64},
-            postgresql_ops={"embedding": "vector_cosine_ops"},
+            postgresql_ops={"embedding": "halfvec_cosine_ops"},
         ),
     )

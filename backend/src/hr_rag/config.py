@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://hr_rag:changeme@localhost:5432/hr_rag"
     google_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
-    embedding_model: str = "models/text-embedding-004"
-    embedding_dimension: int = 768
+    embedding_model: str = "models/gemini-embedding-001"
+    embedding_dimension: int = 3072
     backend_port: int = 8000
     debug: bool = False
 

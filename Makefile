@@ -1,4 +1,4 @@
-.PHONY: all setup setup-uv setup-backend setup-frontend setup-db setup-env setup-hooks \
+.PHONY: all setup setup-uv setup-backend setup-frontend setup-db setup-env setup-hooks db-seed \
         dev dev-backend dev-frontend dev-db \
         test test-backend test-frontend \
         lint format clean stop db-shell db-logs help
@@ -11,7 +11,7 @@ all: help
 # ============================================================
 
 ## setup: Set up entire project from scratch
-setup: setup-uv setup-env setup-backend setup-frontend setup-db setup-hooks
+setup: setup-uv setup-env setup-backend setup-frontend setup-db db-migrate db-seed setup-hooks
 	@echo "Project setup complete. Run 'make dev' to start."
 
 ## setup-uv: Install uv if not already installed
@@ -134,6 +134,10 @@ db-reset:
 	docker compose exec db psql -U $${POSTGRES_USER:-hr_rag} -d $${POSTGRES_DB:-hr_rag} -c "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
 	cd backend && uv run alembic upgrade head
 	@echo "Database reset complete."
+
+## db-seed: Populate the database with mock HR documents (idempotent)
+db-seed:
+	cd backend && uv run python scripts/seed_documents.py
 
 ## db-shell: Open psql shell
 db-shell:

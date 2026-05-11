@@ -1,7 +1,7 @@
 import asyncio
 from logging.config import fileConfig
 
-from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import HALFVEC, Vector
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -26,6 +26,9 @@ def _render_item(type_, obj, autogen_context):
     if type_ == "type" and isinstance(obj, Vector):
         autogen_context.imports.add("from pgvector.sqlalchemy import Vector")
         return f"Vector({obj.dim})"
+    if type_ == "type" and isinstance(obj, HALFVEC):
+        autogen_context.imports.add("from pgvector.sqlalchemy import HALFVEC")
+        return f"HALFVEC({obj.dim})"
     return False
 
 
