@@ -1,7 +1,7 @@
 .PHONY: all setup setup-uv setup-backend setup-frontend setup-db setup-env setup-hooks db-seed \
         dev dev-backend dev-frontend dev-db \
         test test-backend test-frontend \
-        lint format clean stop db-shell db-logs help
+        lint format fmt clean stop db-shell db-logs help
 
 # Default target
 all: help
@@ -106,6 +106,9 @@ lint:
 format:
 	cd backend && uv run ruff format src/ tests/
 	cd backend && uv run ruff check --fix src/ tests/
+
+## fmt: Alias for format (fix linter issues)
+fmt: format
 
 # ============================================================
 # DATABASE

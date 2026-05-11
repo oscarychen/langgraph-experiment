@@ -6,7 +6,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from hr_rag.auth import get_current_employee_id
 from hr_rag.rag.graph import agent_graph
 from hr_rag.rag.prompts import HR_SYSTEM_PROMPT
-from hr_rag.schemas.chat import ChatRequest, ChatResponse
+from hr_rag.schemas.chat import ChatRequest, ChatResponse, SourceRef
 
 router = APIRouter()
 
@@ -40,4 +40,8 @@ async def chat(
         ]
     }
     result = await agent_graph.ainvoke(initial_state)
-    return ChatResponse(answer=_message_text(result["messages"][-1]), sources=[])
+    sources = [SourceRef(**ref) for ref in result.get("cited_sources") or []]
+    return ChatResponse(
+        answer=_message_text(result["messages"][-1]),
+        sources=sources,
+    )

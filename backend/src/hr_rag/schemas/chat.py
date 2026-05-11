@@ -6,6 +6,12 @@ class ChatRequest(BaseModel):
     session_id: str | None = None
 
 
+class SourceRef(BaseModel):
+    title: str
+    source_uri: str
+    doc_type: str | None = None
+
+
 class ChatResponse(BaseModel):
     answer: str
-    sources: list[str]
+    sources: list[SourceRef]

@@ -135,6 +135,21 @@ def submit_leave_request(
     }
 
 
+@tool
+def search_hr_documents(query: str) -> str:
+    """Search HR policy documents for additional context.
+
+    Call this when the retrieved excerpts already in the conversation don't
+    cover the user's question. The graph router intercepts this call and
+    runs the retrieval pipeline; the function body is never executed.
+
+    Args:
+        query: A focused, standalone search query (not a question to the user).
+    """
+    # Intercepted by route_after_agent in rag/nodes.py — never invoked.
+    raise NotImplementedError("search_hr_documents is a signaling tool")
+
+
 HR_TOOLS = [
     get_employee_profile,
     get_leave_balance,
@@ -142,3 +157,5 @@ HR_TOOLS = [
     get_benefits_enrollment,
     submit_leave_request,
 ]
+
+SEARCH_TOOL_NAME = "search_hr_documents"
