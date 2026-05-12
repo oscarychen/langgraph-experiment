@@ -1,7 +1,12 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+)
 
 from hr_rag.auth import get_current_employee_id
 from hr_rag.rag.graph import agent_graph
@@ -33,13 +38,15 @@ async def chat(
         employee_id=employee_id,
         today=date.today().isoformat(),
     )
-    initial_state = {
-        "messages": [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=request.question),
-        ]
-    }
-    result = await agent_graph.ainvoke(initial_state)
+    messages: list[BaseMessage] = [SystemMessage(content=system_prompt)]
+    for m in request.history:
+        if m.role == "user":
+            messages.append(HumanMessage(content=m.content))
+        else:
+            messages.append(AIMessage(content=m.content))
+    messages.append(HumanMessage(content=request.question))
+
+    result = await agent_graph.ainvoke({"messages": messages})
     sources = [SourceRef(**ref) for ref in result.get("cited_sources") or []]
     return ChatResponse(
         answer=_message_text(result["messages"][-1]),

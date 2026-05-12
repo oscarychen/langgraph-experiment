@@ -1,8 +1,16 @@
+from typing import Literal
+
 from pydantic import BaseModel
+
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
 
 
 class ChatRequest(BaseModel):
     question: str
+    history: list[ChatMessage] = []
     session_id: str | None = None
 
 

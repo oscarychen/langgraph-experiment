@@ -1,7 +1,7 @@
 from langchain_core.messages import AIMessage, HumanMessage
 
 from hr_rag.config import settings
-from hr_rag.rag.nodes import route_after_agent, route_after_grade
+from hr_rag.rag.nodes import route_after_agent, route_after_grade, route_entry
 from hr_rag.rag.state import _dedup_sources
 
 
@@ -116,6 +116,29 @@ def test_route_after_grade_attempts_cap_takes_priority_over_ambiguous():
         "retrieval_origin": "initial",
     }
     assert route_after_grade(state) == "agent"
+
+
+# ---- route_entry ----
+
+
+def test_route_entry_first_turn_goes_to_retrieve():
+    state = {"messages": [HumanMessage(content="what's the leave policy?")]}
+    assert route_entry(state) == "retrieve"
+
+
+def test_route_entry_followup_skips_to_agent():
+    state = {
+        "messages": [
+            HumanMessage(content="submit a vacation request"),
+            AIMessage(content="That's less than 2 weeks notice. Submit anyway?"),
+            HumanMessage(content="yes"),
+        ]
+    }
+    assert route_entry(state) == "agent"
+
+
+def test_route_entry_empty_messages_goes_to_retrieve():
+    assert route_entry({"messages": []}) == "retrieve"
 
 
 # ---- _dedup_sources reducer ----

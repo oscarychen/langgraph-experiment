@@ -9,6 +9,7 @@ from hr_rag.rag.nodes import (
     retrieve_node,
     route_after_agent,
     route_after_grade,
+    route_entry,
 )
 from hr_rag.rag.state import AgentState
 from hr_rag.rag.tools import HR_TOOLS
@@ -22,7 +23,11 @@ def build_agent_graph():
     graph.add_node("clarify", clarify_node)
     graph.add_node("tools", ToolNode(HR_TOOLS))
 
-    graph.add_edge(START, "retrieve")
+    graph.add_conditional_edges(
+        START,
+        route_entry,
+        {"retrieve": "retrieve", "agent": "agent"},
+    )
     graph.add_edge("retrieve", "grade")
     graph.add_conditional_edges(
         "grade",

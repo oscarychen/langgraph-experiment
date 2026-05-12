@@ -180,6 +180,20 @@ def _make_agent_node():
 agent_node = _make_agent_node()
 
 
+def route_entry(state: dict[str, Any]) -> Literal["retrieve", "agent"]:
+    """Skip the deterministic retrieve→grade prefix on follow-up turns.
+
+    A turn is a follow-up if any prior AIMessage exists in state — the agent
+    then sees the full history and decides whether to call search_hr_documents
+    or another tool itself.
+    """
+    messages = state.get("messages") or []
+    for msg in messages:
+        if isinstance(msg, AIMessage):  # follow-up turn
+            return "agent"
+    return "retrieve"  # first turn
+
+
 def route_after_agent(state: dict[str, Any]) -> Literal["retrieve", "tools", "end"]:
     messages = state.get("messages") or []
     if not messages:

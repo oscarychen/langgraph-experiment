@@ -11,12 +11,13 @@ export default function Chat() {
     if (!input.trim() || isLoading) return;
 
     const question = input.trim();
+    const history = messages.map(({ role, content }) => ({ role, content }));
     setInput("");
     addMessage({ role: "user", content: question });
     setLoading(true);
 
     try {
-      const response = await sendChatMessage(question);
+      const response = await sendChatMessage(question, history);
       addMessage({ role: "assistant", content: response.answer });
     } catch {
       addMessage({
