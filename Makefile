@@ -47,7 +47,6 @@ setup-hooks:
 ## setup-env: Create .env files from examples if they don't exist
 setup-env:
 	@test -f .env || cp .env.example .env
-	@test -f backend/.env || cp backend/.env.example backend/.env
 	@test -f .mcp.json || cp .mcp.json.example .mcp.json
 	@echo "Environment files ready."
 
