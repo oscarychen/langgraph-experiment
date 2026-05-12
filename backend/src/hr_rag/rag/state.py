@@ -25,6 +25,9 @@ def _dedup_sources(
 
 class AgentState(TypedDict, total=False):
     messages: Annotated[list[BaseMessage], add_messages]
+    # Authenticated principal. Set once per request by the API layer and
+    # injected into tool calls so the LLM cannot choose another user's id.
+    employee_id: str
     retrieved_chunks: list[dict[str, Any]]
     retrieval_attempts: int
     last_query: str

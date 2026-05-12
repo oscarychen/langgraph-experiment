@@ -34,10 +34,7 @@ async def chat(
     request: ChatRequest,
     employee_id: str = Depends(get_current_employee_id),
 ) -> ChatResponse:
-    system_prompt = HR_SYSTEM_PROMPT.format(
-        employee_id=employee_id,
-        today=date.today().isoformat(),
-    )
+    system_prompt = HR_SYSTEM_PROMPT.format(today=date.today().isoformat())
     messages: list[BaseMessage] = [SystemMessage(content=system_prompt)]
     for m in request.history:
         if m.role == "user":
@@ -46,7 +43,9 @@ async def chat(
             messages.append(AIMessage(content=m.content))
     messages.append(HumanMessage(content=request.question))
 
-    result = await agent_graph.ainvoke({"messages": messages})
+    result = await agent_graph.ainvoke(
+        {"messages": messages, "employee_id": employee_id}
+    )
     sources = [SourceRef(**ref) for ref in result.get("cited_sources") or []]
     return ChatResponse(
         answer=_message_text(result["messages"][-1]),

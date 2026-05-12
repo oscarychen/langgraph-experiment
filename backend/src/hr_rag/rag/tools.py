@@ -2,17 +2,24 @@
 
 All functions return hardcoded mock data. They will be replaced with real
 backing services (HRIS, payroll, benefits) once those integrations exist.
+
+`employee_id` is supplied via `InjectedState` so it is filled in by
+`ToolNode` from the authenticated graph state — it never appears in the
+schema the LLM sees, which prevents the model from being coaxed (by the
+user or by retrieved content) into acting on another user's behalf.
 """
 
+from typing import Annotated
+
 from langchain_core.tools import tool
+from langgraph.prebuilt import InjectedState
+
+EmployeeId = Annotated[str, InjectedState("employee_id")]
 
 
 @tool
-def get_employee_profile(employee_id: str) -> dict:
-    """Look up basic profile information for an employee.
-
-    Args:
-        employee_id: Unique employee identifier (e.g., "EMP001").
+def get_employee_profile(employee_id: EmployeeId) -> dict:
+    """Look up basic profile information for the current employee.
 
     Returns:
         Dict with name, team, hire_date (YYYY-MM-DD), and manager.
@@ -27,14 +34,11 @@ def get_employee_profile(employee_id: str) -> dict:
 
 
 @tool
-def get_leave_balance(employee_id: str) -> dict:
-    """Look up the employee's current leave balance.
+def get_leave_balance(employee_id: EmployeeId) -> dict:
+    """Look up the current employee's current leave balance.
 
     Returns days taken so far this year, days remaining, and a per-type
     breakdown for vacation, sick, and personal leave.
-
-    Args:
-        employee_id: Unique employee identifier.
 
     Returns:
         Dict with days_taken, days_remaining, and type_breakdown.
@@ -52,11 +56,8 @@ def get_leave_balance(employee_id: str) -> dict:
 
 
 @tool
-def get_payroll_info(employee_id: str) -> dict:
-    """Look up the employee's most recent payroll information.
-
-    Args:
-        employee_id: Unique employee identifier.
+def get_payroll_info(employee_id: EmployeeId) -> dict:
+    """Look up the current employee's most recent payroll information.
 
     Returns:
         Dict with pay_cycle, last_pay_date, last_pay_amount (gross), and
@@ -78,11 +79,8 @@ def get_payroll_info(employee_id: str) -> dict:
 
 
 @tool
-def get_benefits_enrollment(employee_id: str) -> dict:
-    """Look up the employee's current benefits enrollment.
-
-    Args:
-        employee_id: Unique employee identifier.
+def get_benefits_enrollment(employee_id: EmployeeId) -> dict:
+    """Look up the current employee's current benefits enrollment.
 
     Returns:
         Dict with enrolled_benefits (list of plan names) and coverage_tier.
@@ -102,15 +100,14 @@ def get_benefits_enrollment(employee_id: str) -> dict:
 
 @tool
 def submit_leave_request(
-    employee_id: str,
     leave_type: str,
     start_date: str,
     end_date: str,
+    employee_id: EmployeeId,
 ) -> dict:
-    """Submit a new leave request on behalf of the employee.
+    """Submit a new leave request on behalf of the current employee.
 
     Args:
-        employee_id: Unique employee identifier.
         leave_type: One of "vacation", "sick", or "personal".
         start_date: First day of leave, ISO format (YYYY-MM-DD).
         end_date: Last day of leave, ISO format (YYYY-MM-DD).
